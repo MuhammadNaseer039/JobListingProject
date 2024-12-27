@@ -1,4 +1,6 @@
 using JobListingSite.Components;
+using JobListingSite.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace JobListingSite
 {
@@ -11,6 +13,9 @@ namespace JobListingSite
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            var connectionString = builder.Configuration.GetConnectionString("defaultconnection") ?? throw new InvalidOperationException("Connection string 'defaultconnection' not found");
+            builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
             var app = builder.Build();
 
