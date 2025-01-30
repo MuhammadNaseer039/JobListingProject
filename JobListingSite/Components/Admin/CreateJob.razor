@@ -1,0 +1,92 @@
+﻿@page "/CreateJob"
+@rendermode InteractiveServer
+@layout AdminLayout
+@inject AppDbContext db
+@inject IWebHostEnvironment env
+@inject NavigationManager nav
+
+
+<div class="row justify-content-center">
+    <div class="col-8 d-flex justify-content-center">
+        <h3>
+            Create Job
+        </h3>
+    </div>
+    <div class="col-8 d-flex justify-content-center">
+        <EditForm class="row" method="post" enctype="multipart/form-data" Enhance="true" Model="job" FormName="CreateJobForm" OnValidSubmit="createJobMethod">
+            <DataAnnotationsValidator />
+            <div class="col-6">
+                <label class="form-label">Title</label>
+                <InputText class="form-control" @bind-Value="job.Name"></InputText>
+                <ValidationMessage class="text-danger" For="@(()=>job.Name)" />
+            </div>
+            <div class="col-6">
+                <label class="form-label">Category</label>
+                <InputSelect class="form-control" @bind-Value="job.Nature">
+                    <option>-------select-------</option>
+                    @foreach (var item in categories)
+                    {
+                        <option value="@item.Name">@item.Name</option>
+                    }
+                 </InputSelect>
+                <ValidationMessage class="text-danger" For="@(()=>job.Nature)" />
+            </div>
+            <div class="col-6">
+                <label class="form-label">Salary</label>
+                <InputText class="form-control" @bind-Value="job.Salary"></InputText>
+                <ValidationMessage class="text-danger" For="@(()=>job.Salary)" />
+            </div>
+            <div class="col-6">
+                <label class="form-label">Last Date to Apply</label>
+                <InputText class="form-control" @bind-Value="job.LastDateToApply"></InputText>
+                <ValidationMessage class="text-danger" For="@(()=>job.LastDateToApply)" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Upload Picture:</label>
+                <InputFile class="form-control" OnChange="handleFileSelected" />
+            </div>
+            <div class="col-12 mt-2">
+                <button class="btn btn-primary" type="submit">Create Job</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+
+@code {
+    [SupplyParameterFromForm]
+    public Job job { get; set; } = new();
+
+    public List<Category> categories { get; set; }
+
+    private void handleFileSelected(InputFileChangeEventArgs e)
+    {
+        job.Picture = e.File;
+    }
+
+    private async Task createJobMethod()
+    {
+        var imagename = job.Picture.Name.ToString();
+        var folderpath = Path.Combine(env.WebRootPath, "images");
+        var imagepath = Path.Combine(folderpath, job.Picture.Name);
+        await job.Picture.OpenReadStream().CopyToAsync(new FileStream(imagepath, FileMode.Create));
+        job.Image = imagename;
+        await db.tbl_jobs.AddAsync(job);
+        await db.SaveChangesAsync();
+        nav.NavigateTo("/createjob", true);
+        // try
+        // {
+            
+        // }
+        // catch(Exception ex)
+        // {
+        //     nav.NavigateTo("/createjob");
+        // }
+    }
+
+    protected override void OnInitialized()
+    {
+        categories = db.tbl_categories.ToList();
+    }
+
+}

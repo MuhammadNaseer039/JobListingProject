@@ -24,6 +24,23 @@ namespace JobListingSite.Migrations
                 {
                     table.PrimaryKey("PK_tbl_categories", x => x.Id);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "tbl_jobs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Nature = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Salary = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastDateToApply = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tbl_jobs", x => x.Id);
+                });
         }
 
         /// <inheritdoc />
@@ -31,6 +48,9 @@ namespace JobListingSite.Migrations
         {
             migrationBuilder.DropTable(
                 name: "tbl_categories");
+
+            migrationBuilder.DropTable(
+                name: "tbl_jobs");
         }
     }
 }

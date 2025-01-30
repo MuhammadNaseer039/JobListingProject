@@ -10,5 +10,6 @@ namespace JobListingSite.Data
 
         }
         public DbSet<Category> tbl_categories {  get; set; }
+        public DbSet<Job> tbl_jobs { get; set; }
     }
 }

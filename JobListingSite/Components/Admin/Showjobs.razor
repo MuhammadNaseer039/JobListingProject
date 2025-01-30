@@ -1,0 +1,270 @@
+﻿@page "/showjobs"
+@using Microsoft.EntityFrameworkCore
+
+@layout AdminLayout
+@rendermode InteractiveServer
+@inject IWebHostEnvironment env
+@inject NavigationManager nav
+@inject AppDbContext db
+
+<style>
+    .avatar {
+        vertical-align: middle;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+    }
+</style>
+
+
+<div class="row justify-content-center">
+    <div class="col-md-8 d-flex justify-content-center">
+        @if (jobs == null)
+        {
+            <table class="table table-striped placeholder-glow">
+                <thead>
+                    <tr>
+                        <th colspan="9">
+                            <h3>
+                                Jobs
+                            </h3>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Nature</th>
+                        <th scope="col">Salary</th>
+                        <th scope="col">Last Date to Apply</th>
+                        <th scope="col">Image</th>
+                        <th scope="col" colspan="2">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">
+                            <span class="col-6 placeholder"></span>
+                        </th>
+                        <td><span class="col-6 placeholder"></span></td>
+                        <td><span class="col-6 placeholder"></span></td>
+                        <td><span class="col-6 placeholder"></span></td>
+                        <td><span class="col-6 placeholder"></span></td>
+                        <td><span class="col-6 placeholder"></span></td>
+                        <td>
+                            <span class="col-6 placeholder"></span>
+                        </td>
+                        <td>
+                            <span class="col-6 placeholder"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th colspan="9">
+                            <h3>
+                                Jobs
+                            </h3>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Nature</th>
+                        <th scope="col">Salary</th>
+                        <th scope="col">Last Date to Apply</th>
+                        <th scope="col">Image</th>
+                        <th scope="col" colspan="2" class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in jobs)
+                    {
+                        <tr>
+                            <th scope="row">@item.Id</th>
+                            <td>@item.Name</td>
+                            <td>@item.Nature</td>
+                            <td>@item.Salary</td>
+                            <td>@item.LastDateToApply</td>
+                            <td><img src="/images/@item.Image" alt="Avatar" class="avatar"></td>
+                            <td>
+                                <button type="button" @onclick="@(()=>findJob(item.Id))" class="btn btn-primary mr--5" data-bs-toggle="modal" data-bs-target="#updateModal">
+                                    Update
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" @onclick="@(() => findJob(item.Id))" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+</div>
+
+<!-- Update Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="updateModalLabel">Update job</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row justify-content-center">
+                    <div class="col-8 d-flex justify-content-center">
+                        <EditForm class="row" method="post" enctype="multipart/form-data" Enhance="true" Model="job" FormName="updateJobForm" OnValidSubmit="updateJobMethod">
+                            <DataAnnotationsValidator />
+                            <div class="col-6">
+                                <label class="form-label">Title</label>
+                                <InputText class="form-control" @bind-Value="job.Name"></InputText>
+                                <input type="hidden" @bind-value="job.Id" />
+                                <ValidationMessage class="text-danger" For="@(()=>job.Name)" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Category</label>
+                                <InputSelect class="form-control" @bind-Value="job.Nature">
+                                    <option>-------select-------</option>
+                                    @if(categories == null)
+                                    {
+                                        <option>-----select------</option>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var item in categories)
+                                        {
+                                            <option value="@item.Name">@item.Name</option>
+                                        }
+                                    }
+                                </InputSelect>
+                                <ValidationMessage class="text-danger" For="@(()=>job.Nature)" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Salary</label>
+                                <InputText class="form-control" @bind-Value="job.Salary"></InputText>
+                                <ValidationMessage class="text-danger" For="@(()=>job.Salary)" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Last Date to Apply</label>
+                                <InputText class="form-control" @bind-Value="job.LastDateToApply"></InputText>
+                                <ValidationMessage class="text-danger" For="@(()=>job.LastDateToApply)" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Image</label>
+                                <img src="images/@job.Image" width="100px" height="100px"/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Upload Picture:</label>
+                                <InputFile class="form-control" OnChange="handleFileSelected" />
+                            </div>
+                            <div class="col-12 mt-2">
+                                <button class="btn btn-primary" type="submit">update Job</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @* <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Update Category</button> *@
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="deleteModalLabel">Delete</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger">Are you sure you want to delete ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" @onclick="@(() => categoryToDelete())" data-bs-dismiss="modal" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    public List<Job> jobs { get; set; }
+    public List<Category> categories { get; set; }
+    [SupplyParameterFromForm]
+    public Job job { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        jobs = await db.tbl_jobs.ToListAsync();
+        categories = await db.tbl_categories.ToListAsync();
+
+    }
+
+    private void handleFileSelected(InputFileChangeEventArgs e)
+    {
+        job.Picture = e.File;
+    }
+
+    private async Task updateJobMethod()
+    {
+        try
+        {
+            if(job.Picture != null)
+            {
+                string oldimage = job.Image;
+                job.Image = job.Picture.Name.ToString();
+                DeleteImage(oldimage);
+                var folderpath = Path.Combine(env.WebRootPath, "images");
+                var imagepath = Path.Combine(folderpath, job.Picture.Name.ToString());
+                await using var stream = new FileStream(imagepath, FileMode.Create);
+                await job.Picture.OpenReadStream().CopyToAsync(stream);
+                stream.Close();
+            }
+            db.tbl_jobs.Update(job);
+            await db.SaveChangesAsync();
+            nav.NavigateTo("/showjobs", true);
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+    private void categoryToDelete()
+    {
+        db.tbl_jobs.Remove(job);
+        db.SaveChanges();
+    }
+    private void findJob(int id)
+    {
+        job = db.tbl_jobs.Find(id);
+    }
+
+
+    private void DeleteImage(string imagename)
+    {
+        var folderpath = Path.Combine(env.WebRootPath, "images");
+        var imagepath = Path.Combine(folderpath, imagename);
+
+        if(File.Exists(imagepath))
+        {
+            File.Delete(imagepath);
+        }
+
+    }
+
+}

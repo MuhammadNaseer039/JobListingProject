@@ -1,0 +1,191 @@
+﻿@page "/Categories"
+@using Microsoft.EntityFrameworkCore
+@rendermode InteractiveServer
+@layout AdminLayout
+@inject AppDbContext db
+@inject NavigationManager nav
+
+
+<div class="row justify-content-center">
+    <div class="col-md-8 d-flex justify-content-center">
+        @if(categories == null)
+        {
+            <table class="table table-striped placeholder-glow">
+                <thead>
+                    <tr>
+                        <th colspan="7">
+                            <h3>
+                                Categories
+                            </h3>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Slug</th>
+                        <th scope="col" colspan="2">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row">
+                            <span class="col-6 placeholder"></span>
+                        </th>
+                        <td><span class="col-6 placeholder"></span></td>
+                        <td><span class="col-6 placeholder"></span></td>
+                        <td><span class="col-6 placeholder"></span></td>
+                        <td>
+                            <span class="col-6 placeholder"></span>
+                        </td>
+                        <td>
+                            <span class="col-6 placeholder"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th colspan="7">
+                            <h3>
+                                Categories
+                            </h3>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Slug</th>
+                        <th scope="col" colspan="2" class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in categories)
+                    {
+                        <tr>
+                            <th scope="row">@item.Id</th>
+                            <td>@item.Name</td>
+                            <td>@item.Description</td>
+                            <td>@item.Slug</td>
+                            <td>
+                                <button type="button" @onclick="@(()=>findCategory(item.Id))" class="btn btn-primary mr--5" data-bs-toggle="modal" data-bs-target="#updateModal">
+                                    Update
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" @onclick="@(() => findCategory(item.Id))" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        
+    </div>
+</div>
+
+<!-- Update Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="updateModalLabel">Update Category</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row justify-content-center">
+                    <div class="col-8 d-flex justify-content-center">
+                        <EditForm class="row" Enhance="true" Model="selectedCategory" FormName="UpdateCategoryForm" OnValidSubmit="UpdateCategoryMethod">
+                            <DataAnnotationsValidator />
+                            <div class="col-6">
+                                <label class="form-label">Name</label>
+                                <InputText class="form-control" @bind-Value="selectedCategory.Name"></InputText>
+                                <input type="hidden" @bind-value="selectedCategory.Id"/>
+                                <ValidationMessage class="text-danger" For="@(()=>selectedCategory.Name)" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Slug</label>
+                                <InputText class="form-control" @bind-Value="selectedCategory.Slug"></InputText>
+                                <ValidationMessage class="text-danger" For="@(()=>selectedCategory.Slug)" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <InputText class="form-control" @bind-Value="selectedCategory.Description"></InputText>
+                                <ValidationMessage class="text-danger" For="@(()=>selectedCategory.Description)" />
+                            </div>
+                            <div class="col-12 mt-2">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button class="btn btn-primary" type="submit">Update Category</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @* <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Update Category</button> *@
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="deleteModalLabel">Delete</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-danger">Are you sure you want to delete ?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" @onclick="@(() => categoryToDelete())" data-bs-dismiss="modal" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+
+    public List<Category> categories { get; set; }
+
+    [SupplyParameterFromForm]
+    public Category selectedCategory { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(5000);
+        categories = await db.tbl_categories.ToListAsync();
+    }
+
+    private void findCategory(int id)
+    {
+        selectedCategory = db.tbl_categories.Find(id);
+    }
+
+    private void UpdateCategoryMethod()
+    {
+        db.tbl_categories.Update(selectedCategory);
+        db.SaveChanges();
+        // nav.NavigateTo(
+        //     "/categories",
+        //     true
+        // );
+    }
+
+    private void categoryToDelete()
+    {
+        db.tbl_categories.Remove(selectedCategory);
+        db.SaveChanges();
+    }
+}

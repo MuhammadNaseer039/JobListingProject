@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobListingSite.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241226205857_initial")]
+    [Migration("20250130194756_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -47,6 +47,39 @@ namespace JobListingSite.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("tbl_categories");
+                });
+
+            modelBuilder.Entity("JobListingSite.Models.Job", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastDateToApply")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nature")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Salary")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tbl_jobs");
                 });
 #pragma warning restore 612, 618
         }

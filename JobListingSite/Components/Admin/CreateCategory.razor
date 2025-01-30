@@ -1,0 +1,50 @@
+﻿@page "/CreateCategory"
+@rendermode InteractiveServer
+@layout AdminLayout
+@inject AppDbContext db
+@inject NavigationManager nav
+
+<div class="row justify-content-center">
+    <div class="col-8 d-flex justify-content-center">
+        <h3>
+            Create Category
+        </h3>
+    </div>
+    <div class="col-8 d-flex justify-content-center">
+        <EditForm class="row" Enhance="true" Model="category" FormName="CreateCategoryForm" OnValidSubmit="CreateCategoryMethod">
+            <DataAnnotationsValidator />
+            <div class="col-6">
+                <label class="form-label">Name</label>
+                <InputText class="form-control" @bind-Value="category.Name"></InputText>
+                <ValidationMessage class="text-danger" For="@(()=>category.Name)" />
+            </div>
+            <div class="col-6">
+                <label class="form-label">Slug</label>
+                <InputText class="form-control" @bind-Value="category.Slug"></InputText>
+                <ValidationMessage class="text-danger" For="@(()=>category.Slug)" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                <InputText class="form-control" @bind-Value="category.Description"></InputText>
+                <ValidationMessage class="text-danger" For="@(()=>category.Description)" />
+            </div>
+            <div class="col-12 mt-2">
+                <button class="btn btn-primary" type="submit">Create Category</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    public Category category { get; set; } = new();
+
+
+    private void CreateCategoryMethod()
+    {
+        db.tbl_categories.Add(category);
+        db.SaveChanges();
+        nav.NavigateTo("/Categories",true);
+    }
+
+}
