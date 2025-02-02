@@ -1,5 +1,6 @@
 ﻿@page "/CreateCategory"
 @rendermode InteractiveServer
+@attribute [Authorize(Roles = "admin")]
 @layout AdminLayout
 @inject AppDbContext db
 @inject NavigationManager nav

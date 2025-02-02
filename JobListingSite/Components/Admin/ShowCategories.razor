@@ -1,5 +1,6 @@
 ﻿@page "/Categories"
 @using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Roles = "admin")]
 @rendermode InteractiveServer
 @layout AdminLayout
 @inject AppDbContext db
@@ -164,7 +165,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(5000);
         categories = await db.tbl_categories.ToListAsync();
     }
 

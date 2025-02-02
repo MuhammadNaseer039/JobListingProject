@@ -20,6 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\Admin\Access-denied\" />
+    <Folder Include="wwwroot\Admin\Loginfiles\" />
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 

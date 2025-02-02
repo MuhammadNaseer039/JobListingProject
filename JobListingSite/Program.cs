@@ -1,5 +1,6 @@
 using JobListingSite.Components;
 using JobListingSite.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 namespace JobListingSite
@@ -16,6 +17,18 @@ namespace JobListingSite
 
             var connectionString = builder.Configuration.GetConnectionString("defaultconnection") ?? throw new InvalidOperationException("Connection string 'defaultconnection' not found");
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie
+                (option =>
+                {
+                    option.Cookie.Name = "AuthCookie";
+                    option.Cookie.MaxAge = TimeSpan.FromMinutes(20);
+                    option.LoginPath = "/Admin/Login";
+                    option.AccessDeniedPath = "/Admin/Access-denied";
+                });
+            builder.Services.AddAuthorization();
+            builder.Services.AddCascadingAuthenticationState();
+            builder.Services.AddHttpContextAccessor();
 
             var app = builder.Build();
 

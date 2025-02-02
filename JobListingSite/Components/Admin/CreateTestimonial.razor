@@ -1,0 +1,81 @@
+﻿@page "/Createtestimonials"
+@attribute [Authorize]
+@layout AdminLayout
+@rendermode InteractiveServer
+@inject AppDbContext db
+@inject IWebHostEnvironment env
+@inject NavigationManager nav
+
+<div class="row justify-content-center">
+    <div class="col-8 justify-content-center">
+        <h3>
+            Create Testimonial
+        </h3>
+    </div>
+    <div class="col-8 d-flex justify-content-center">
+        <EditForm class="row" method="post" enctype="multipart/form-data" Enhance="true" Model="testimonail" FormName="CreateTestimonialForm" OnValidSubmit="createTestimonialMethod">
+            <DataAnnotationsValidator />
+            <div class="col-6">
+                <label class="form-label">Name</label>
+                <InputText class="form-control" @bind-Value="testimonail.Name"></InputText>
+                <ValidationMessage class="text-danger" For="@(()=>testimonail.Name)" />
+            </div>
+            <div class="col-6">
+                <label class="form-label">Occupation</label>
+                <InputText class="form-control" @bind-Value="testimonail.Occupation"></InputText>
+                <ValidationMessage class="text-danger" For="@(()=>testimonail.Occupation)" />
+            </div>
+            <div class="col-6">
+                <label class="form-label">Review</label>
+                <InputText class="form-control" @bind-Value="testimonail.Review"></InputText>
+                <ValidationMessage class="text-danger" For="@(()=>testimonail.Review)" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Upload Picture:</label>
+                <InputFile class="form-control" OnChange="handleFileSelected" />
+            </div>
+            <div class="col-12 mt-2">
+                <button class="btn btn-primary" type="submit">Create Testimonial</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+
+@code {
+    [SupplyParameterFromForm]
+    public Testimonail testimonail { get; set; } = new();
+
+    private bool flag = false;
+
+    private async Task createTestimonialMethod()
+    {
+        try
+        {
+            if(testimonail.Picture != null)
+            {
+                testimonail.Image = testimonail.Picture.Name.ToString();
+
+                var folderpath = Path.Combine(env.WebRootPath, "images");
+                var imagepath = Path.Combine(folderpath, testimonail.Image);
+
+                await using var stream = new FileStream(imagepath, FileMode.Create);
+
+                await testimonail.Picture.OpenReadStream().CopyToAsync(stream);
+                stream.Close();
+
+            }
+            db.tbl_testimonials.Add(testimonail);
+            await db.SaveChangesAsync();
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+    private void handleFileSelected(InputFileChangeEventArgs e)
+    {
+        testimonail.Picture = e.File;
+    }
+}

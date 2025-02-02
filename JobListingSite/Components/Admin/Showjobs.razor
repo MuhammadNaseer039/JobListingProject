@@ -1,11 +1,14 @@
 ﻿@page "/showjobs"
+
 @using Microsoft.EntityFrameworkCore
 
+@attribute [Authorize(Roles = "admin")]
 @layout AdminLayout
 @rendermode InteractiveServer
 @inject IWebHostEnvironment env
 @inject NavigationManager nav
 @inject AppDbContext db
+
 
 <style>
     .avatar {

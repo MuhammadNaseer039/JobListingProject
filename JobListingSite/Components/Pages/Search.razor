@@ -1,0 +1,72 @@
+﻿@page "/Search/{keyword}/{category}"
+@inject AppDbContext db
+@inject NavigationManager nav
+@rendermode InteractiveServer
+
+
+<!-- Jobs Start -->
+<div class="py-5">
+    <div class="container">
+        <h1 class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">Searched Jobs</h1>
+        <div class="tab-class text-center wow fadeInUp" data-wow-delay="0.3s">
+            <ul class="nav nav-pills d-inline-flex justify-content-center border-bottom mb-5">
+                <button class="btn btn-secondary" @onclick="@(()=>nav.NavigateTo("/",true))">
+                    <h3>
+                        Show All Jobs
+                    </h3>
+                </button>
+            </ul>
+            <div class="tab-content">
+                <div id="tab-1" class="tab-pane fade show p-0 active">
+                    @foreach (var item in jobs)
+                    {
+                        <div class="job-item p-4 mb-4">
+                            <div class="row g-4">
+                                <div class="col-sm-12 col-md-8 d-flex align-items-center">
+                                    <img class="flex-shrink-0 img-fluid border rounded" src="images/@item.Image"
+                                         alt="" style="width: 80px; height: 80px;">
+                                    <div class="text-start ps-4">
+                                        <h5 class="mb-3">@item.Name</h5>
+                                        <span class="text-truncate me-3">
+                                            <i class="fa fa-map-marker-alt text-primary me-2"></i>New York,
+                                            USA
+                                        </span>
+                                        <span class="text-truncate me-3">
+                                            <i class="far fa-clock text-primary me-2"></i>@item.Nature
+                                        </span>
+                                        <span class="text-truncate me-0">
+                                            <i class="far fa-money-bill-alt text-primary me-2"></i>@item.Salary
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
+                                    <small class="text-truncate">
+                                        <i class="far fa-calendar-alt text-primary me-2"></i>Last Date: @item.LastDateToApply
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Jobs End -->
+
+
+
+@code {
+    [Parameter]
+    public string keyword { get; set; }
+    [Parameter]
+    public string category { get; set; }
+
+    public List<Job> jobs { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        jobs = db.tbl_jobs.Where(x => x.Name.Contains(keyword) && x.Nature == category).ToList();
+        base.OnParametersSet();
+    }
+}
